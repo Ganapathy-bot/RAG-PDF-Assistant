@@ -34,7 +34,7 @@ def query_llm_with_context(query: str, context: str):
         temperature=0.4,
         extra_headers={
             "HTTP-Referer": "http://localhost",
-            "X-Title": "RAG HR Assistant",
+            "X-Title": "RAG PDF Assistant",
         },
     )
     return response.choices[0].message.content

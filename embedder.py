@@ -13,7 +13,7 @@ client = OpenAI(
 
 _EXTRA_HEADERS = {
     "HTTP-Referer": "http://localhost",
-    "X-Title": "RAG HR Assistant",
+    "X-Title": "RAG PDF Assistant",
 }
 
 

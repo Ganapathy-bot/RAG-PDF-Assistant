@@ -1,4 +1,4 @@
-# RAG HR Assistant
+# RAG PDF Assistant
 
 A Python RAG (Retrieval-Augmented Generation) application that answers questions from PDF documents. It reads files from `resources/`, builds a local vector index, retrieves relevant passages, and uses an LLM to generate grounded answers.
 
@@ -33,8 +33,8 @@ PDFs in resources/
 ## Setup
 
 ```bash
-git clone https://github.com/Ganapathy-bot/RAG_HR_ASSISTANT.git
-cd RAG_HR_ASSISTANT
+git clone https://github.com/Ganapathy-bot/RAG-PDF-Assistant.git
+cd RAG-PDF-Assistant
 pip install -r requirements.txt
 ```
 
@@ -89,7 +89,7 @@ python dataprocessor.py
 ## Project Structure
 
 ```
-RAG_HR_ASSISTANT/
+RAG-PDF-Assistant/
 ├── resources/              # PDF documents to index
 ├── data/                   # Local vector store (auto-generated, gitignored)
 ├── dataprocessor.py        # Indexing pipeline
