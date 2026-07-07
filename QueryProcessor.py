@@ -21,5 +21,5 @@ def process_user_query(query: str):
     print(generated_response)
 
 if __name__ == "__main__":
-    user_query = "What is the work timing policy?"
+    user_query = "What is biostatistics?"
     process_user_query(user_query)
