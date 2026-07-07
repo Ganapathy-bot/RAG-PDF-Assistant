@@ -20,6 +20,7 @@ __pycache__/
 .menv/**
 
 # Resources, data, or temp files
+data/
 *.log
 *.tmp
 
@@ -31,3 +32,4 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+terminals/

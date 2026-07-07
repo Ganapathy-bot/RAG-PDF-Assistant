@@ -1,45 +1,49 @@
-from pinecone import Pinecone
 import os
-from dotenv import load_dotenv
+from pathlib import Path
 from typing import List
 
-# Load environment variables from .env file
+import numpy as np
+from dotenv import load_dotenv
+
 load_dotenv()
 
-# Initialize Pinecone client
-pinecone_client = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
-index = pinecone_client.Index(os.getenv("PINECONE_INDEX_NAME"))
+VECTOR_STORE_PATH = os.getenv("VECTOR_STORE_PATH", "./data/vectors.npz")
+
+
+def _cosine_similarity(query: np.ndarray, vectors: np.ndarray) -> np.ndarray:
+    query_norm = np.linalg.norm(query)
+    vector_norms = np.linalg.norm(vectors, axis=1)
+    denom = vector_norms * query_norm
+    dots = vectors @ query
+    return np.divide(dots, denom, where=denom > 0, out=np.zeros_like(dots))
+
 
 def store_in_pinecone(chunks: List[str], embeddings: List[List[float]], namespace: str = ""):
-    vectors_to_upsert = []
-    for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-        vector_data = {
-            "id": f"chunk_{i}",
-            "values": embedding,
-            "metadata": {
-                "text": chunk,
-                "chunk_index": i
-            }
-        }
-        vectors_to_upsert.append(vector_data)
-    
-    # Upsert vectors in batches (Pinecone recommends batch size of 100)
-    batch_size = 100
-    for i in range(0, len(vectors_to_upsert), batch_size):
-        batch = vectors_to_upsert[i:i + batch_size]
-        index.upsert(vectors=batch, namespace=namespace)
+    path = Path(VECTOR_STORE_PATH)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    vectors = np.array(embeddings, dtype=float)
+    texts = np.array(chunks, dtype=object)
+    chunk_indices = np.arange(len(chunks))
+
+    np.savez(path, vectors=vectors, texts=texts, chunk_indices=chunk_indices)
+    print(f"Stored {len(chunks)} vectors to {path.resolve()}")
 
 
 def search_in_pinecone(query_vector: List[float], top_k: int = 4, namespace: str = ""):
-    results = index.query(
-        vector=query_vector,
-        top_k=top_k,
-        include_metadata=True,
-        namespace=namespace
-    )
+    path = Path(VECTOR_STORE_PATH)
+    if not path.exists():
+        print(f"No vector store found at {path.resolve()}.")
+        return []
 
-    print(f"Found {len(results.matches)} matches for the query.")
-    matched_chunks = []
-    for match in results.matches:
-        matched_chunks.append(match.metadata.get("text", ""))
-    return matched_chunks
+    data = np.load(path, allow_pickle=True)
+    vectors = data["vectors"]
+    texts = data["texts"]
+
+    query = np.array(query_vector, dtype=float)
+    scores = _cosine_similarity(query, vectors)
+    ranked_idx = np.argsort(scores)[::-1][:top_k]
+    matched = [str(texts[i]) for i in ranked_idx]
+
+    print(f"Found {len(matched)} matches in local store.")
+    return matched

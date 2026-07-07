@@ -1,4 +1,4 @@
 pypdf
 openai
-pinecone
 dotenv
+numpy
